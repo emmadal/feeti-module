@@ -28,9 +28,9 @@ jobs:
         run: |
           pwd
           ls -la
-          mkdir -p build
-          go build -v -o build/feeti-module .
-
+          mkdir -p build || exit 1
+          go build -v -o build/feeti-module . || exit 1
+          
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
