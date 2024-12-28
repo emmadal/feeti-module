@@ -1,0 +1,90 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: ${{ github.event.release.body }}
+          draft: false
+          prerelease: false 
+          token: ${{ secrets.TOKEN_GITHUB }}
+
+      - name: Test with golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.60
+          working-directory: .
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: stable
+
+      - name: Build modules
+        run: go build -o feeti-module .
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          version: v1.5.0
+          args: release --clean
+
+      - name: Compress Files
+        id: compress
+        run: tar cvzf feeti-module.tar.gz $(find . -maxdepth 1 -type d -name "feeti-module" -exec basename {} \;)
+
+      - name: Get Release ID
+        id: get-release-id
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const release = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id
+            });
+            return release.data.id
+
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        with:
+          release_id: ${{ steps.get-release-id.outputs.release_id }}
+          asset_path: ./feeti-module.tar.gz
+          asset_name: feeti-module.tar.gz
+          asset_content_type: application/gzip
+
+
