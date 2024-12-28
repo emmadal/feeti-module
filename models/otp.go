@@ -7,10 +7,10 @@ import (
 // Otp is the struct for OTP in the database
 type Otp struct {
 	ID          int64     `json:"id" gorm:"primaryKey;unique;not null;autoIncrement"`
-	Code        string    `json:"code" gorm:"type:varchar(6);not null;uniqueIndex" binding:"required,min=6,max=6,numeric"`
+	Code        string    `json:"code" gorm:"type:varchar(6);not null;uniqueIndex" binding:"min=6,max=6,numeric"`
 	IsUsed      bool      `json:"is_used" gorm:"type:boolean;not null;default:false"`
 	PhoneNumber string    `json:"phone_number" gorm:"type:varchar(15);not null;uniqueIndex" binding:"required,e164,min=11,max=14"`
-	KeyUID      string    `json:"key_uid" gorm:"type:varchar(100);not null;uniqueIndex" binding:"required,uuid"`
+	KeyUID      string    `json:"key_uid" gorm:"type:varchar(100);not null;uniqueIndex" binding:"uuid"`
 	ExpiryAt    time.Time `json:"expiry_at" binding:"required,gtfield=CreatedAt"`
 	CreatedAt   time.Time `json:"created_at"`
 }
