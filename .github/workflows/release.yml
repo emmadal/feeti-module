@@ -26,6 +26,8 @@ jobs:
 
       - name: Build with Go
         run: |
+          pwd
+          ls -la
           mkdir -p build || exit 1
           go build -v -o build/feeti-module . || exit 1
           
