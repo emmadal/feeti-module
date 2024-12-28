@@ -26,10 +26,10 @@ type User struct {
 // Wallet is the struct for a wallet
 type Wallet struct {
 	ID        int64           `json:"id" gorm:"primaryKey;unique"`
-	UserID    int64           `json:"user_id" gorm:"type:bigint;not null" binding:"required,number,gt=0"`
+	UserID    int64           `json:"user_id" gorm:"type:bigint;not null;index" binding:"required,number,gt=0"`
 	User      User            `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Balance   decimal.Decimal `json:"balance" gorm:"type:decimal(20,2);default:0;not null" binding:"required"`
-	Currency  string          `json:"currency" gorm:"type:varchar(3);default:XOF;not null" binding:"alpha,oneof=XOF GHS XAF GNH EUR USD"`
+	Currency  string          `json:"currency" gorm:"type:varchar(3);default:XOF;not null;index" binding:"alpha,oneof=XOF GHS XAF GNH EUR USD"`
 	IsActive  bool            `json:"is_active" gorm:"type:boolean;default:true"`
 	CreatedAt time.Time       `json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
