@@ -11,7 +11,7 @@ type Otp struct {
 	IsUsed      bool      `json:"is_used" gorm:"type:boolean;not null;default:false"`
 	PhoneNumber string    `json:"phone_number" gorm:"type:varchar(15);not null;index" binding:"required,e164,min=11,max=14"`
 	KeyUID      string    `json:"key_uid" gorm:"type:varchar(100);not null;index" binding:"required,uuid"`
-	ExpiryAt    time.Time `json:"expiry_at" binding:"required,gtfield=CreatedAt,future"`
+	ExpiryAt    time.Time `json:"expiry_at" binding:"required,gtfield=CreatedAt"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
