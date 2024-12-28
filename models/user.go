@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"google.golang.org/genproto/googleapis/type/decimal"
 )
 
 // User is the struct for a user
@@ -16,7 +14,7 @@ type User struct {
 	DeviceToken string    `json:"device_token" gorm:"type:varchar(200);not null" binding:"required,min=10,max=200"`
 	Pin         string    `json:"pin" gorm:"type:varchar(100);not null" binding:"required"`
 	Quota       uint      `json:"quota" gorm:"type:bigint;default:0;not null"`
-	Locked      bool      `json:"locked" gorm:"type:boolean;default:false"`
+	Locked      bool      `json:"locked" gorm:"type:boolean;default:false;not null"`
 	Photo       string    `json:"photo" gorm:"type:text"`
 	IsActive    bool      `json:"is_active" gorm:"type:boolean;default:true;index"`
 	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
@@ -25,14 +23,14 @@ type User struct {
 
 // Wallet is the struct for a wallet
 type Wallet struct {
-	ID        int64           `json:"id" gorm:"primaryKey;unique"`
-	UserID    int64           `json:"user_id" gorm:"type:bigint;not null;index" binding:"required,number,gt=0"`
-	User      User            `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Balance   decimal.Decimal `json:"balance" gorm:"type:decimal(20,2);default:0;not null" binding:"required"`
-	Currency  string          `json:"currency" gorm:"type:varchar(3);default:XOF;not null;index" binding:"alpha,oneof=XOF GHS XAF GNH EUR USD"`
-	IsActive  bool            `json:"is_active" gorm:"type:boolean;default:true"`
-	CreatedAt time.Time       `json:"created_at"`
-	UpdatedAt time.Time       `json:"updated_at"`
+	ID        int64     `json:"id" gorm:"primaryKey;unique"`
+	UserID    int64     `json:"user_id" gorm:"type:bigint;not null;index" binding:"required,number,gt=0"`
+	User      User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Balance   float64   `json:"balance" gorm:"type:float;default:0;not null"`
+	Currency  string    `json:"currency" gorm:"type:varchar(3);default:XOF;not null;index" binding:"alpha,oneof=XOF GHS XAF GNH EUR USD"`
+	IsActive  bool      `json:"is_active" gorm:"type:boolean;default:true"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // Login is the struct for login
