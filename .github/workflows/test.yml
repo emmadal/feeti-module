@@ -6,10 +6,8 @@ on:
       - main
 
 jobs:
-  test:
-    name: Run Tests
+  first-job:
     runs-on: ubuntu-latest
-
     services:
       memcached:
         image: memcached:1.6-alpine
