@@ -2,13 +2,12 @@ module github.com/emmadal/feeti-module
 
 go 1.21.0
 
-toolchain go1.21
-
 require (
+	github.com/bradfitz/gomemcache v0.0.0-20230905024940-24af94b03874
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/genproto v0.0.0-20241223144023-3abc09e42ca8
 )
 
 require (
