@@ -17,8 +17,8 @@ type TestStruct struct {
 
 func setupTest(t *testing.T) func() {
 	// Reset client and once for clean state
-	Client = nil
-	once = sync.Once{}
+	memCacheClient = nil
+	onceMemcache = sync.Once{}
 
 	// Load env file
 	if err := godotenv.Load("../.env"); err != nil {
@@ -34,13 +34,13 @@ func setupTest(t *testing.T) func() {
 
 	// Return cleanup function
 	return func() {
-		if Client != nil {
+		if memCacheClient != nil {
 			if err := FlushAll(); err != nil {
 				t.Logf("Warning: Failed to flush cache during cleanup: %v", err)
 			}
 		}
-		Client = nil
-		once = sync.Once{}
+		memCacheClient = nil
+		onceMemcache = sync.Once{}
 	}
 }
 
@@ -71,8 +71,8 @@ func TestInitMemcache(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset client for each test
-			Client = nil
-			once = sync.Once{}
+			memCacheClient = nil
+			onceMemcache = sync.Once{}
 
 			tt.setup()
 			err := InitMemcache()
@@ -80,7 +80,7 @@ func TestInitMemcache(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, Client)
+				assert.NotNil(t, memCacheClient)
 			}
 		})
 	}
@@ -90,7 +90,7 @@ func TestSetAndGetDataInCache(t *testing.T) {
 	cleanup := setupTest(t)
 	defer cleanup()
 
-	assert.NotNil(t, Client, "Client should be initialized")
+	assert.NotNil(t, memCacheClient, "memCacheClient should be initialized")
 
 	tests := []struct {
 		name    string
@@ -154,7 +154,7 @@ func TestUpdateDataInCache(t *testing.T) {
 	cleanup := setupTest(t)
 	defer cleanup()
 
-	assert.NotNil(t, Client, "Client should be initialized")
+	assert.NotNil(t, memCacheClient, "memCacheClient should be initialized")
 
 	key := "test_update"
 	initialValue := TestStruct{Name: "initial", Value: 1}
@@ -182,7 +182,7 @@ func TestDeleteDataFromCache(t *testing.T) {
 	cleanup := setupTest(t)
 	defer cleanup()
 
-	assert.NotNil(t, Client, "Client should be initialized")
+	assert.NotNil(t, memCacheClient, "memCacheClient should be initialized")
 
 	key := "test_delete"
 	value := "test value"
@@ -208,7 +208,7 @@ func TestCacheExpiration(t *testing.T) {
 	cleanup := setupTest(t)
 	defer cleanup()
 
-	assert.NotNil(t, Client, "Client should be initialized")
+	assert.NotNil(t, memCacheClient, "memCacheClient should be initialized")
 
 	key := "test_expiration"
 	value := "test value"
@@ -229,7 +229,7 @@ func TestFlushAll(t *testing.T) {
 	cleanup := setupTest(t)
 	defer cleanup()
 
-	assert.NotNil(t, Client, "Client should be initialized")
+	assert.NotNil(t, memCacheClient, "memCacheClient should be initialized")
 
 	// Set multiple test data
 	testData := map[string]string{
