@@ -2,7 +2,6 @@ package cache
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -13,9 +12,8 @@ import (
 
 var (
 	// Client is the memcache client instance
-	Client                 *memcache.Client
-	once                   sync.Once
-	ErrCacheNotInitialized = errors.New("cache client not initialized")
+	memCacheClient *memcache.Client
+	onceMemcache   sync.Once
 )
 
 // validate cache options
@@ -26,7 +24,7 @@ func validateCacheOptions(ttl int32, key string) error {
 	if key == "" || len(key) > 50 {
 		return fmt.Errorf("key cannot be empty or longer than 50 characters")
 	}
-	if Client == nil {
+	if memCacheClient == nil {
 		if err := InitMemcache(); err != nil {
 			return fmt.Errorf("failed to initialize cache: %w", err)
 		}
@@ -38,19 +36,20 @@ func validateCacheOptions(ttl int32, key string) error {
 // InitMemcache initializes the memcache client
 func InitMemcache() error {
 	var initErr error
-	once.Do(func() {
+	// Initialize client once
+	onceMemcache.Do(func() {
 		host := os.Getenv("MEMCACHE_HOST")
 		port := os.Getenv("MEMCACHE_PORT")
 		if host == "" || port == "" {
 			initErr = fmt.Errorf("memcache host or port not set")
 			return
 		}
-		Client = memcache.New(fmt.Sprintf("%s:%s", host, port))
-		Client.Timeout = 2 * time.Second // Set reasonable default timeout
+		memCacheClient = memcache.New(fmt.Sprintf("%s:%s", host, port))
+		memCacheClient.Timeout = 2 * time.Second // Set reasonable default timeout
 		// Test connection
-		if err := Client.Ping(); err != nil {
+		if err := memCacheClient.Ping(); err != nil {
 			initErr = fmt.Errorf("failed to connect to memcache: %w", err)
-			Client = nil
+			memCacheClient = nil
 			return
 		}
 	})
@@ -72,7 +71,7 @@ func SetDataInCache(key string, value interface{}, ttl int32) error {
 	}
 
 	// Set data in cache
-	err = Client.Set(&memcache.Item{
+	err = memCacheClient.Set(&memcache.Item{
 		Key:        key,
 		Value:      jsonData,
 		Expiration: ttl,
@@ -85,7 +84,7 @@ func SetDataInCache(key string, value interface{}, ttl int32) error {
 
 // GetDataFromCache gets data from cache and returns the result by type T
 func GetDataFromCache[T any](key string) (T, error) {
-	if Client == nil {
+	if memCacheClient == nil {
 		if err := InitMemcache(); err != nil {
 			return *new(T), fmt.Errorf("failed to initialize cache: %w", err)
 		}
@@ -96,7 +95,7 @@ func GetDataFromCache[T any](key string) (T, error) {
 		return *new(T), fmt.Errorf("key cannot be empty")
 	}
 
-	item, err := Client.Get(key)
+	item, err := memCacheClient.Get(key)
 	if err != nil {
 		if err == memcache.ErrCacheMiss {
 			return *new(T), fmt.Errorf("data not found in cache for key %s", key)
@@ -113,7 +112,7 @@ func GetDataFromCache[T any](key string) (T, error) {
 
 // DeleteDataFromCache deletes data from cache
 func DeleteDataFromCache(key string) error {
-	if Client == nil {
+	if memCacheClient == nil {
 		if err := InitMemcache(); err != nil {
 			return fmt.Errorf("failed to initialize cache: %w", err)
 		}
@@ -123,7 +122,7 @@ func DeleteDataFromCache(key string) error {
 		return fmt.Errorf("key cannot be empty")
 	}
 
-	err := Client.Delete(key)
+	err := memCacheClient.Delete(key)
 	if err != nil && err != memcache.ErrCacheMiss {
 		return fmt.Errorf("failed to delete data from cache: %w", err)
 	}
@@ -143,7 +142,7 @@ func UpdateDataInCache(key string, value interface{}, ttl int32) error {
 		return fmt.Errorf("failed to marshal data: %w", err)
 	}
 
-	err = Client.Replace(&memcache.Item{
+	err = memCacheClient.Replace(&memcache.Item{
 		Key:        key,
 		Value:      jsonData,
 		Expiration: ttl,
@@ -159,14 +158,14 @@ func UpdateDataInCache(key string, value interface{}, ttl int32) error {
 
 // FlushAll removes all items from cache
 func FlushAll() error {
-	if Client == nil {
+	if memCacheClient == nil {
 		if err := InitMemcache(); err != nil {
 			return fmt.Errorf("failed to initialize cache: %w", err)
 		}
 		return fmt.Errorf("cache client not initialized")
 	}
 
-	if err := Client.FlushAll(); err != nil {
+	if err := memCacheClient.FlushAll(); err != nil {
 		return fmt.Errorf("failed to flush cache: %w", err)
 	}
 	return nil
