@@ -6,7 +6,7 @@ import (
 
 // Otp is the struct for OTP in the database
 type Otp struct {
-	ID          int64     `json:"id" gorm:"primaryKey;unique;not null;autoIncrement"`
+	ID          int64     `json:"id" gorm:"primaryKey;autoIncrement;unique;not null"`
 	Code        string    `json:"code" gorm:"type:varchar(6);not null;uniqueIndex" binding:"min=6,max=6,numeric"`
 	IsUsed      bool      `json:"is_used" gorm:"type:boolean;not null;default:false"`
 	PhoneNumber string    `json:"phone_number" gorm:"type:varchar(15);not null;uniqueIndex" binding:"required,e164,min=11,max=14"`
