@@ -29,8 +29,8 @@ type Wallet struct {
 	Balance   float64   `json:"balance" gorm:"type:float;default:0;not null"`
 	Currency  string    `json:"currency" gorm:"type:varchar(3);default:XOF;not null;index" binding:"alpha,oneof=XOF GHS XAF GNH EUR USD"`
 	IsActive  bool      `json:"is_active" gorm:"type:boolean;default:true"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 // Login is the struct for login
