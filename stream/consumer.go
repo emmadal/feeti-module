@@ -41,19 +41,14 @@ func KafkaConsumer[T any](servers string) {
 			switch *msg.TopicPartition.Topic {
 			case "payment":
 				go payment[T](msg.Value)
-				break
 			case "campaign":
 				go campaign[T](msg.Value)
-				break
 			case "refund":
 				go refund[T](msg.Value)
-				break
 			case "transfer":
 				go transfer[T](msg.Value)
-				break
 			case "system":
 				go system[T](msg.Value)
-				break
 			default:
 				break
 			}
