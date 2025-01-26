@@ -18,7 +18,7 @@ type Otp struct {
 
 // CheckOtp is the struct for checking the OTP
 type CheckOtp struct {
-	Code        string    `json:"code" binding:"required,min=6,max=6,numeric"`
+	Code        string    `json:"code" binding:"required,min=5,max=5,numeric"`
 	PhoneNumber string    `json:"phone_number" binding:"required,e164,min=11,max=14"`
 	KeyUID      string    `json:"key_uid" binding:"required,uuid"`
 	ExpiryAt    time.Time `json:"expiry_at"`

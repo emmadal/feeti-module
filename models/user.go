@@ -37,13 +37,14 @@ type Wallet struct {
 type Login struct {
 	PhoneNumber string `json:"phone_number" binding:"required,e164,min=11,max=14"`
 	Pin         string `json:"pin" binding:"required,len=4,numeric,min=4,max=4"`
+	DeviceToken string `json:"device_token" binding:"required,min=10,max=100"`
 }
 
 // ResetPin is the struct for resetting the pin
 type ResetPin struct {
 	PhoneNumber string `json:"phone_number" binding:"required,e164,min=11,max=14"`
 	Pin         string `json:"pin" binding:"required,len=4,numeric,min=4,max=4"`
-	CodeOTP     string `json:"code_otp" binding:"required,len=6,numeric,min=6,max=6"`
+	CodeOTP     string `json:"code_otp" binding:"required,len=5,numeric"`
 	KeyUID      string `json:"key_uid" binding:"required,uuid"`
 }
 
@@ -52,6 +53,6 @@ type UpdatePin struct {
 	PhoneNumber string `json:"phone_number" binding:"required,e164,min=11,max=14"`
 	OldPin      string `json:"old_pin" binding:"required,len=4,numeric,min=4,max=4"`
 	NewPin      string `json:"new_pin" binding:"required,len=4,numeric,min=4,max=4"`
-	CodeOTP     string `json:"code_otp" binding:"required,len=6,numeric,min=6,max=6"`
+	CodeOTP     string `json:"code_otp" binding:"required,len=5,numeric"`
 	KeyUID      string `json:"key_uid" binding:"required,uuid"`
 }
