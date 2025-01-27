@@ -7,12 +7,12 @@ import (
 // User is the struct for a user
 type User struct {
 	ID          int64     `json:"id" gorm:"primaryKey;autoIncrement"`
-	FirstName   string    `json:"first_name" gorm:"type:varchar(100);not null" binding:"required,alpha"`
-	LastName    string    `json:"last_name" gorm:"type:varchar(100);not null" binding:"required,alpha"`
-	Email       string    `json:"email" gorm:"type:varchar(100);uniqueIndex"`
+	FirstName   string    `json:"first_name" gorm:"type:varchar(150);not null" binding:"required,alpha"`
+	LastName    string    `json:"last_name" gorm:"type:varchar(150);not null" binding:"required,alpha"`
+	Email       string    `json:"email" gorm:"type:varchar(150);uniqueIndex"`
 	PhoneNumber string    `json:"phone_number" gorm:"type:varchar(15);uniqueIndex;not null" binding:"required,e164,min=11,max=14"`
-	DeviceToken string    `json:"device_token" gorm:"type:varchar(100);index;not null" binding:"required,min=10,max=100"`
-	Pin         string    `json:"pin" gorm:"type:varchar(70);not null" binding:"required"`
+	DeviceToken string    `json:"device_token" gorm:"type:varchar(150);index;not null" binding:"required,min=10,max=100"`
+	Pin         string    `json:"pin" gorm:"type:varchar(150);not null" binding:"required"`
 	Quota       uint      `json:"quota" gorm:"type:bigint;default:0;not null"`
 	Locked      bool      `json:"locked" gorm:"type:boolean;default:false;not null"`
 	Photo       string    `json:"photo" gorm:"type:text"`
