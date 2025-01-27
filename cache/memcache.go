@@ -16,23 +16,6 @@ var (
 	onceMemcache   sync.Once
 )
 
-// validate cache options
-func validateCacheOptions(ttl int32, key string) error {
-	if ttl < 0 {
-		return fmt.Errorf("ttl cannot be negative")
-	}
-	if key == "" || len(key) > 50 {
-		return fmt.Errorf("key cannot be empty or longer than 50 characters")
-	}
-	if memCacheClient == nil {
-		if err := InitMemcache(); err != nil {
-			return fmt.Errorf("failed to initialize cache: %w", err)
-		}
-		return fmt.Errorf("cache client not initialized")
-	}
-	return nil
-}
-
 // InitMemcache initializes the memcache client
 func InitMemcache() error {
 	var initErr error
@@ -58,10 +41,19 @@ func InitMemcache() error {
 
 // SetDataInCache sets data in cache with JSON encoding. 0 means no expiration. ttl is in seconds
 func SetDataInCache(key string, value interface{}, ttl int32) error {
+	if memCacheClient == nil {
+		if err := InitMemcache(); err != nil {
+			return fmt.Errorf("failed to initialize cache: %w", err)
+		}
+		return fmt.Errorf("cache client not initialized")
+	}
 
 	// Validate cache options
-	if err := validateCacheOptions(ttl, key); err != nil {
-		return err
+	if ttl < 0 {
+		return fmt.Errorf("ttl cannot be negative")
+	}
+	if key == "" || len(key) > 50 {
+		return fmt.Errorf("key cannot be empty or longer than 50 characters")
 	}
 
 	// Convert value to JSON
@@ -131,9 +123,19 @@ func DeleteDataFromCache(key string) error {
 
 // UpdateDataInCache updates data in cache. 0 means no expiration. ttl is in seconds
 func UpdateDataInCache(key string, value interface{}, ttl int32) error {
+	if memCacheClient == nil {
+		if err := InitMemcache(); err != nil {
+			return fmt.Errorf("failed to initialize cache: %w", err)
+		}
+		return fmt.Errorf("cache client not initialized")
+	}
+
 	// Validate cache options
-	if err := validateCacheOptions(ttl, key); err != nil {
-		return err
+	if ttl < 0 {
+		return fmt.Errorf("ttl cannot be negative")
+	}
+	if key == "" || len(key) > 50 {
+		return fmt.Errorf("key cannot be empty or longer than 50 characters")
 	}
 
 	// Convert value to JSON
