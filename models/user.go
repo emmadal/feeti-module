@@ -9,14 +9,14 @@ type User struct {
 	ID          int64     `json:"id" gorm:"primaryKey;autoIncrement"`
 	FirstName   string    `json:"first_name" gorm:"type:varchar(150);not null" binding:"required,alpha"`
 	LastName    string    `json:"last_name" gorm:"type:varchar(150);not null" binding:"required,alpha"`
-	Email       string    `json:"email" gorm:"type:varchar(150);uniqueIndex"`
-	PhoneNumber string    `json:"phone_number" gorm:"type:varchar(15);uniqueIndex;not null" binding:"required,e164,min=11,max=14"`
-	DeviceToken string    `json:"device_token" gorm:"type:varchar(150);index;not null" binding:"required,min=10,max=100"`
+	Email       string    `json:"email" gorm:"type:varchar(150)"`
+	PhoneNumber string    `json:"phone_number" gorm:"type:varchar(15);uniqueIndex:idx_phone_number;not null" binding:"required,e164,min=11,max=14"`
+	DeviceToken string    `json:"device_token" gorm:"type:varchar(150);not null" binding:"required,min=10,max=100"`
 	Pin         string    `json:"pin" gorm:"type:varchar(150);not null" binding:"required"`
 	Quota       uint      `json:"quota" gorm:"type:bigint;default:0;not null"`
 	Locked      bool      `json:"locked" gorm:"type:boolean;default:false;not null"`
-	Photo       string    `json:"photo" gorm:"type:text"`
-	IsActive    bool      `json:"is_active" gorm:"type:boolean;default:true;index"`
+	Photo       string    `json:"photo" gorm:"type:varchar(200)"`
+	IsActive    bool      `json:"is_active" gorm:"type:boolean;default:true;index:idx_is_active"`
 	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
@@ -24,10 +24,10 @@ type User struct {
 // Wallet is the struct for a wallet
 type Wallet struct {
 	ID        int64     `json:"id" gorm:"primaryKey;unique"`
-	UserID    int64     `json:"user_id" gorm:"type:bigint;not null;index" binding:"required,number,gt=0"`
+	UserID    int64     `json:"user_id" gorm:"type:bigint;not null;uniqueIndex:idx_user_id" binding:"required,number,gt=0"`
 	User      User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Balance   float64   `json:"balance" gorm:"type:float;default:0;not null"`
-	Currency  string    `json:"currency" gorm:"type:varchar(3);default:XOF;not null;uniqueIndex" binding:"alpha,oneof=XOF GHS XAF GNH EUR USD"`
+	Currency  string    `json:"currency" gorm:"type:varchar(3);default:XAF;not null" binding:"alpha,oneof=XOF GHS XAF GNH EUR USD"`
 	IsActive  bool      `json:"is_active" gorm:"type:boolean;default:true"`
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
