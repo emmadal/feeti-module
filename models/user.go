@@ -6,17 +6,17 @@ import (
 
 // User is the struct for a user
 type User struct {
-	ID          int64     `json:"id" gorm:"primaryKey;autoIncrement"`
+	ID          int64     `json:"id" gorm:"primaryKey;autoIncrement;unique"`
 	FirstName   string    `json:"first_name" gorm:"type:varchar(150);not null" binding:"required,alpha"`
 	LastName    string    `json:"last_name" gorm:"type:varchar(150);not null" binding:"required,alpha"`
 	Email       string    `json:"email" gorm:"type:varchar(150);unique"`
-	PhoneNumber string    `json:"phone_number" gorm:"type:varchar(15);unique;index:idx_phone_number;not null" binding:"required,e164,min=11,max=14"`
+	PhoneNumber string    `json:"phone_number" gorm:"type:varchar(17);unique;index:idx_phone_number,priority:1;not null" binding:"required,e164,min=11,max=14"`
 	DeviceToken string    `json:"device_token" gorm:"type:varchar(150);unique;not null" binding:"required,min=10,max=100"`
 	Pin         string    `json:"pin" gorm:"type:varchar(150);not null" binding:"required"`
 	Quota       uint      `json:"quota" gorm:"type:bigint;default:0;not null"`
-	Locked      bool      `json:"locked" gorm:"type:boolean;default:false;not null"`
+	Locked      bool      `json:"locked" gorm:"type:boolean;default:false;index:idx_locked,priority:2;not null"`
 	Photo       string    `json:"photo" gorm:"type:varchar(200)"`
-	IsActive    bool      `json:"is_active" gorm:"type:boolean;default:true;index:idx_is_active"`
+	IsActive    bool      `json:"is_active" gorm:"type:boolean;default:true;index:idx_is_active,priority:2;index:idx_user_status,priority:1"`
 	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
