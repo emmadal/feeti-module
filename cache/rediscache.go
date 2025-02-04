@@ -89,7 +89,7 @@ func SetRedisData(ctx context.Context, key string, value any, ttl int32) error {
 }
 
 // UpdateRedisData updates data in cache. 0 means no expiration. ttl is in seconds
-func UpdateRedisData[T any](ctx context.Context, key string, newValue interface{}) error {
+func UpdateRedisData(ctx context.Context, key string, newValue interface{}) error {
 	// Check if the key exists
 	ttl, err := rdb.TTL(ctx, key).Result()
 	if err != nil {
