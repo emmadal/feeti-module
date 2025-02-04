@@ -51,7 +51,7 @@ func TestUpdateRedisData(t *testing.T) {
 
 	_ = SetRedisData(ctx, key, initialValue, 1)
 
-	err := UpdateRedisData[RedisTest](ctx, key, updatedValue)
+	err := UpdateRedisData(ctx, key, updatedValue)
 	assert.NoError(t, err, "UpdateRedisData should not return an error")
 
 	var result RedisTest
