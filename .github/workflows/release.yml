@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -31,7 +31,7 @@ jobs:
           go build -ldflags="-s -w" -v -o build/feeti-module . || exit 1
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: feeti-module
           path: build/feeti-module
@@ -45,7 +45,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           release_name: Release ${{ steps.tag.outputs.release_tag }}
@@ -55,7 +55,7 @@ jobs:
       - name: Upload Release Assets
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/feeti-module
