@@ -3,7 +3,7 @@ package jwt_modules
 import (
 	"errors"
 
-	"github.com/golang-jwt/jwt/v5"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 // VerifyToken verify the given token to get its payload.
