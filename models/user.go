@@ -15,6 +15,8 @@ type User struct {
 	Pin         string    `json:"pin" gorm:"type:varchar(150);not null" binding:"required"`
 	Quota       uint      `json:"quota" gorm:"type:bigint;default:0;not null"`
 	Locked      bool      `json:"locked" gorm:"type:boolean;default:false;not null"`
+	FaceID      bool      `json:"face_id" gorm:"type:boolean;default:false;not null"`
+	FingerPrint bool      `json:"finger_print" gorm:"type:boolean;default:false;not null"`
 	Photo       string    `json:"photo" gorm:"type:varchar(250)"`
 	IsActive    bool      `json:"is_active" gorm:"type:boolean;default:true;index;not null"`
 	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
