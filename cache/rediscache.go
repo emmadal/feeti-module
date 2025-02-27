@@ -147,3 +147,7 @@ func CloseRedis() error {
 	}
 	return nil
 }
+
+func ExportRedisClient() *redis.Client {
+	return rdb
+}
