@@ -12,7 +12,12 @@ func AuthAuthorization(secretKey []byte) gin.HandlerFunc {
 
 		// Check if token is empty
 		if token == "" {
-			c.AbortWithStatusJSON(401, gin.H{"message": "No token provided"})
+			c.AbortWithStatusJSON(401, gin.H{"message": "Authentication token is missing"})
+			return
+		}
+
+		if len(secretKey) == 0 {
+			c.AbortWithStatusJSON(401, gin.H{"message": "Missing or invalid secret key"})
 			return
 		}
 
