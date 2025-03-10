@@ -50,7 +50,14 @@ func TestAuthAuthorization(t *testing.T) {
 
 			// Create a new HTTP request
 			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
-			req.Header.Set("Authorization", tt.token)
+			req.AddCookie(&http.Cookie{
+				Name:     "token",
+				Value:    tt.token,
+				Domain:   "/",
+				HttpOnly: true,
+				Secure:   false,
+				Path:     "/",
+			})
 
 			// Create a response recorder
 			w := httptest.NewRecorder()
