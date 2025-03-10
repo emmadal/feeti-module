@@ -1,34 +1,42 @@
 package jwt_modules
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 )
 
-// AuthAuthorization is a middleware for authorization using JWT
+// AuthAuthorization is a middleware for JWT authentication
 func AuthAuthorization(secretKey []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get the token from the request header
-		token := c.Request.Header.Get("Authorization")
-
-		// Check if token is empty
-		if token == "" {
-			c.AbortWithStatusJSON(401, gin.H{"message": "Authentication token is missing"})
+		// Validate secret key
+		if len(secretKey) == 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid secret key"})
 			return
 		}
 
-		if len(secretKey) == 0 {
-			c.AbortWithStatusJSON(401, gin.H{"message": "Missing or invalid secret key"})
+		// Get the token from the request header
+		tokenCookie, err := c.Request.Cookie("token")
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Token not found"})
+			return
+		}
+
+		token := strings.TrimSpace(tokenCookie.Value)
+		if token == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Empty token"})
 			return
 		}
 
 		// Verify the token
 		userID, err := VerifyToken(token, secretKey)
 		if err != nil {
-			c.AbortWithStatusJSON(403, gin.H{"message": err.Error()})
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Invalid token"})
 			return
 		}
 
-		// Attach the userID to the request
+		// Attach userID to the context
 		c.Set("userID", userID)
 		c.Next()
 	}
