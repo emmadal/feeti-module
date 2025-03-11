@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -12,10 +13,32 @@ import (
 
 // PostgresBackup periodically backup postgres database in the home directory
 func PostgresBackup(dirName string) {
-	ticker := time.NewTicker(10 * time.Second) // new ticker to run every 12 hours
+	backupTime := getBackupTime()
+
+	// new ticker to run every 6 hours
+	ticker := time.NewTicker(backupTime)
 	defer ticker.Stop()
 
-	// loop run every 10 seconds
+	// Verify if backup directory is set
+	if dirName == "" {
+		logrus.Warn("Backup directory not set, We'll use home directory")
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			logrus.Warn("Failed to determine home directory, We'll use current directory")
+			dirName = "."
+		} else {
+			dirName = homeDir
+		}
+	}
+
+	// verify if backup directory exists
+	if f, err := os.Stat(dirName); os.IsNotExist(err) || !f.IsDir() {
+		logrus.Errorf("Please create the backup directory '%s' first", dirName)
+		os.Exit(1)
+	}
+
+	// Perform backup
+	logrus.Infof("Performing backup every %s in %s", backupTime, dirName)
 	for range ticker.C {
 		err := performBackup(dirName)
 		if err != nil {
@@ -25,75 +48,70 @@ func PostgresBackup(dirName string) {
 }
 
 func performBackup(dirName string) error {
-	// create backup file name and open file
-	fileName, file, err := createFileName()
-	if err != nil {
-		return fmt.Errorf("backup file creation error: %w", err)
-	}
-	defer file.Close()
+	start := time.Now()
 
-	// perform backup
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	userName := os.Getenv("DB_USER")
-	host := os.Getenv("DB_HOST")
+	// Retrieve database credentials from environment variables
+	password, dbName, userName, host := getDBCredentials()
+	fileName := fmt.Sprintf("backup_%s.sql.gz", time.Now().Format("2006-01-02T15-04-05"))
+	filePath := filepath.Join(dirName, fileName)
 
-	// perform dump
-	err = postgresDump(fileName, password, dbName, userName, host)
-	if err != nil {
-		return fmt.Errorf("dump error: %w", err)
+	// Perform backup using a secure approach
+	if err := postgresDump(filePath, password, dbName, userName, host); err != nil {
+		return fmt.Errorf("pg_dump error: %w", err)
 	}
 
-	// create backup directory
-	directory, err := createBackupDir(dirName)
-	if err != nil {
-		return fmt.Errorf("backup directory creation error: %w", err)
-	}
-
-	// move file to backup directory
-	err = os.Rename(fileName, filepath.Join(directory, fileName))
-	if err != nil {
-		return fmt.Errorf("backup rename error: %w", err)
-	}
-
-	logrus.Infof("Backup completed successfully: %s", fileName)
+	logrus.Infof("Backup completed successfully: %s", filePath)
+	logrus.Infof("Backup took %s", time.Since(start))
 	return nil
 }
 
-func createFileName() (string, *os.File, error) {
-	fileName := fmt.Sprintf("backup_%s.gz", time.Now().Format("2006-01-02T15:04:05"))
+func postgresDump(fileName, password, dbName, userName, host string) error {
+	// perform backup
+	query := fmt.Sprintf("pg_dump -U %s -d %s -h %s | gzip > %s", userName, dbName, host, fileName)
+	cmd := exec.Command("sh", "-c", query)
+	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", password)) // set password in the environment
+
 	file, err := os.Create(fileName)
 	if err != nil {
-		return "", nil, fmt.Errorf("backup file error: %w", err)
+		return fmt.Errorf("failed to create backup file: %w", err)
 	}
-	return fileName, file, nil
-}
+	defer file.Close()
 
-func postgresDump(fileName, password, dbName, userName, host string) error {
-	query := fmt.Sprintf("PGPASSWORD='%s' pg_dump -U %s -d %s -h %s | gzip > %s",
-		password, userName, dbName, host, fileName)
-	cmd := exec.Command("sh", "-c", query)
+	cmd.Stdout = file
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return fmt.Errorf("pg_dump error: %w", err)
 	}
 	return nil
 }
 
-func createBackupDir(dirName string) (string, error) {
-	homeDir, err := os.UserHomeDir()
+// getBackupTime get the backup time from the environment variable
+func getBackupTime() time.Duration {
+	defaultInterval := 6
+
+	if os.Getenv("BACKUP_TIME") == "" {
+		logrus.Warningln("BACKUP_TIME env variable not set, using default value")
+		return time.Duration(defaultInterval) * time.Hour
+	}
+
+	backupTime, err := strconv.Atoi(os.Getenv("BACKUP_TIME"))
 	if err != nil {
-		return "", fmt.Errorf("home directory error: %w", err)
+		logrus.Warningln("Error parsing BACKUP_TIME env variable, using default value")
+		return time.Duration(defaultInterval) * time.Hour
 	}
 
-	directory := filepath.Join(homeDir, dirName)
-
-	if _, err := os.Stat(directory); os.IsNotExist(err) {
-		err = os.MkdirAll(directory, 0755)
-		if err != nil {
-			return "", fmt.Errorf("backup directory creation error: %w", err)
-		}
+	if backupTime <= 0 || backupTime > 24 {
+		logrus.Warningln("Invalid BACKUP_TIME env variable, using default value")
+		return time.Duration(defaultInterval) * time.Hour
 	}
-	return directory, nil
+	return time.Duration(backupTime) * time.Hour
+}
+
+// getDBCredentials get the database credentials from the environment variables
+func getDBCredentials() (string, string, string, string) {
+	return os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_HOST")
 }
