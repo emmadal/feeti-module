@@ -1,27 +1,38 @@
-package jwt_modules
+package jwt_module
 
 import (
-	"errors"
+	"fmt"
 
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
+// UserClaims defines a struct for JWT claims to avoid using MapClaims
+type UserClaims struct {
+	UserID int64 `json:"userID"`
+	jwt.RegisteredClaims
+}
+
+// Global parser instance to be reused
+var jwtParser = jwt.NewParser(jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}))
+
 // VerifyToken verify the given token to get its payload.
 func VerifyToken(tokenString string, secretKey []byte) (int64, error) {
-	// signature verification
-	parsedToken, err := jwt.Parse(tokenString, func(tokenString *jwt.Token) (interface{}, error) {
-		return secretKey, nil
-	})
+	// Create a claims instance to unmarshal into
+	claims := &UserClaims{}
 
-	if err != nil {
-		return 0, errors.New("Invalid token")
+	// Use ParseWithClaims with the defined struct to reduce allocations
+	token, err := jwtParser.ParseWithClaims(
+		tokenString,
+		claims,
+		func(token *jwt.Token) (any, error) {
+			return secretKey, nil
+		},
+	)
+
+	if err != nil || !token.Valid {
+		return 0, fmt.Errorf("invalid token")
 	}
 
-	// check if the token is valid
-	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
-		userID := claims["userID"].(float64) // convert claims to float64
-		return int64(userID), nil
-	} else {
-		return 0, errors.New("Unable to handle token")
-	}
+	// Access userID directly from the struct
+	return claims.UserID, nil
 }

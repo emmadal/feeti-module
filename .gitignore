@@ -30,6 +30,8 @@ go.work.sum
 # archives
 *.zip
 *.tar.gz
+*.prof
+
 build/
 
 # OS generated files
@@ -43,3 +45,4 @@ build/
 *.iws
 *.iml
 *.idea
+.qodo

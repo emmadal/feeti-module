@@ -1,14 +1,13 @@
 package backup
 
 import (
+	"compress/gzip"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 // PostgresBackup periodically backup postgres database in the home directory
@@ -21,10 +20,10 @@ func PostgresBackup(dirName string) {
 
 	// Verify if backup directory is set
 	if dirName == "" {
-		logrus.Warn("Backup directory not set, We'll use home directory")
+		fmt.Fprintln(os.Stderr, "Backup directory not set, We'll use home directory")
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
-			logrus.Warn("Failed to determine home directory, We'll use current directory")
+			fmt.Fprintln(os.Stderr, "Failed to determine home directory, We'll use current directory")
 			dirName = "."
 		} else {
 			dirName = homeDir
@@ -33,56 +32,58 @@ func PostgresBackup(dirName string) {
 
 	// verify if backup directory exists
 	if f, err := os.Stat(dirName); os.IsNotExist(err) || !f.IsDir() {
-		logrus.Errorf("Please create the backup directory '%s' first", dirName)
+		fmt.Fprintf(os.Stderr, "Please create the backup directory '%s' first\n", dirName)
 		os.Exit(1)
 	}
 
 	// Perform backup
-	logrus.Infof("Performing backup every %s in %s", backupTime, dirName)
+	fmt.Fprintf(os.Stderr, "Performing backup every %s in %s\n", backupTime, dirName)
 	for range ticker.C {
 		err := performBackup(dirName)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{"error": err}).Error(err.Error())
+			fmt.Fprintln(os.Stderr, err.Error())
 		}
 	}
 }
 
 func performBackup(dirName string) error {
-	start := time.Now()
-
 	// Retrieve database credentials from environment variables
 	password, dbName, userName, host := getDBCredentials()
-	fileName := fmt.Sprintf("backup_%s.sql.gz", time.Now().Format("2006-01-02T15-04-05"))
+	fileName := createFileName()
 	filePath := filepath.Join(dirName, fileName)
 
 	// Perform backup using a secure approach
 	if err := postgresDump(filePath, password, dbName, userName, host); err != nil {
 		return fmt.Errorf("pg_dump error: %w", err)
 	}
-
-	logrus.Infof("Backup completed successfully: %s", filePath)
-	logrus.Infof("Backup took %s", time.Since(start))
+	fmt.Fprintf(os.Stderr, "Backup completed successfully: %s\n", filePath)
 	return nil
 }
 
 func postgresDump(fileName, password, dbName, userName, host string) error {
-	// perform backup
-	query := fmt.Sprintf("pg_dump -U %s -d %s -h %s | gzip > %s", userName, dbName, host, fileName)
-	cmd := exec.Command("sh", "-c", query)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", password)) // set password in the environment
+	// Set up the pg_dump command
+	cmd := exec.Command("pg_dump", "-U", userName, "-d", dbName, "-h", host)
+	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", password))
 
-	file, err := os.Create(fileName)
+	// Create the output .gz file
+	outFile, err := os.Create(fileName)
 	if err != nil {
-		return fmt.Errorf("failed to create backup file: %w", err)
+		return fmt.Errorf("failed to create gzip file: %w", err)
 	}
-	defer file.Close()
+	defer outFile.Close()
 
-	cmd.Stdout = file
+	// Create a gzip writer
+	gzipWriter := gzip.NewWriter(outFile)
+	defer gzipWriter.Close()
 
-	err = cmd.Run()
-	if err != nil {
+	// Pipe pg_dump stdout to gzip
+	cmd.Stdout = gzipWriter
+
+	// Run pg_dump
+	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("pg_dump error: %w", err)
 	}
+
 	return nil
 }
 
@@ -91,18 +92,18 @@ func getBackupTime() time.Duration {
 	defaultInterval := 6
 
 	if os.Getenv("BACKUP_TIME") == "" {
-		logrus.Warningln("BACKUP_TIME env variable not set, using default value")
+		fmt.Fprintln(os.Stderr, "BACKUP_TIME env variable not set, using default value")
 		return time.Duration(defaultInterval) * time.Hour
 	}
 
 	backupTime, err := strconv.Atoi(os.Getenv("BACKUP_TIME"))
 	if err != nil {
-		logrus.Warningln("Error parsing BACKUP_TIME env variable, using default value")
+		fmt.Fprintln(os.Stderr, "Error parsing BACKUP_TIME env variable, using default value")
 		return time.Duration(defaultInterval) * time.Hour
 	}
 
 	if backupTime <= 0 || backupTime > 24 {
-		logrus.Warningln("Invalid BACKUP_TIME env variable, using default value")
+		fmt.Fprintln(os.Stderr, "Invalid BACKUP_TIME env variable, using default value")
 		return time.Duration(defaultInterval) * time.Hour
 	}
 	return time.Duration(backupTime) * time.Hour
@@ -114,4 +115,11 @@ func getDBCredentials() (string, string, string, string) {
 		os.Getenv("DB_NAME"),
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_HOST")
+}
+
+func createFileName() string {
+	var buf [32]byte
+	t := time.Now()
+	formatted := t.AppendFormat(buf[:0], "2006-01-02T15-04-05")
+	return "backup_" + string(formatted) + ".sql.gz"
 }

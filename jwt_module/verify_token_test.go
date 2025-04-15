@@ -1,4 +1,4 @@
-package jwt_modules
+package jwt_module
 
 import (
 	"testing"
@@ -15,4 +15,20 @@ func TestVerifyToken(t *testing.T) {
 	_, err = VerifyToken(token, []byte("my_secret_key"))
 	assert.NoError(t, err)
 
+}
+
+func BenchmarkVerifyToken(b *testing.B) {
+	secretKey := []byte("my_secret_key") // allocated once
+	token, err := GenerateToken(1, secretKey)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		_, err := VerifyToken(token, secretKey)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
 }

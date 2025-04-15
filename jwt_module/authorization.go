@@ -1,4 +1,4 @@
-package jwt_modules
+package jwt_module
 
 import (
 	"net/http"

@@ -1,4 +1,4 @@
-package jwt_modules
+package jwt_module
 
 import (
 	"net/http"
@@ -68,5 +68,37 @@ func TestAuthAuthorization(t *testing.T) {
 			// Assert the response status code
 			assert.Equal(t, tt.expectedStatus, w.Code)
 		})
+	}
+}
+
+func BenchmarkAuthAuthorization(b *testing.B) {
+	secretKey := []byte("my_secret_key")
+	validToken, _ := GenerateToken(1, secretKey)
+
+	// Create a new gin context
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(AuthAuthorization(secretKey))
+	r.GET("/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "success"})
+	})
+
+	for b.Loop() {
+		// Create a new HTTP request
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		req.AddCookie(&http.Cookie{
+			Name:     "token",
+			Value:    validToken,
+			Domain:   "/",
+			HttpOnly: true,
+			Secure:   false,
+			Path:     "/",
+		})
+
+		// Create a response recorder
+		w := httptest.NewRecorder()
+
+		// Serve the request
+		r.ServeHTTP(w, req)
 	}
 }

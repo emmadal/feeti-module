@@ -1,13 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
 )
 
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		logrus.Warn("Error loading env file")
+		fmt.Fprintln(os.Stderr, "Error loading env file")
 	}
 }
