@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// PostgresBackup periodically backup postgres database in the home directory
+// PostgresBackup periodically backup a postgres database in the home directory
 func PostgresBackup(dirName string) {
 	backupTime := getBackupTime()
 
@@ -18,7 +18,7 @@ func PostgresBackup(dirName string) {
 	ticker := time.NewTicker(backupTime)
 	defer ticker.Stop()
 
-	// Verify if backup directory is set
+	// Verify if a backup directory is set
 	if dirName == "" {
 		fmt.Fprintln(os.Stderr, "Backup directory not set, We'll use home directory")
 		homeDir, err := os.UserHomeDir()
@@ -30,7 +30,7 @@ func PostgresBackup(dirName string) {
 		}
 	}
 
-	// verify if backup directory exists
+	// verify if a backup directory exists
 	if f, err := os.Stat(dirName); os.IsNotExist(err) || !f.IsDir() {
 		fmt.Fprintf(os.Stderr, "Please create the backup directory '%s' first\n", dirName)
 		os.Exit(1)
