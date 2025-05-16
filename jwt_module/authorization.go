@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AuthAuthorization is a middleware for JWT authentication
+// AuthAuthorization is middleware for JWT authentication
 func AuthAuthorization(secretKey []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Validate secret key
