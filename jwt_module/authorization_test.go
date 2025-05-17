@@ -43,7 +43,7 @@ func TestAuthAuthorization(t *testing.T) {
 			// Create a new gin context
 			gin.SetMode(gin.TestMode)
 			r := gin.New()
-			r.Use(AuthAuthorization(secretKey))
+			r.Use(AuthGin(secretKey))
 			r.GET("/test", func(c *gin.Context) {
 				c.JSON(200, gin.H{"message": "success"})
 			})
@@ -51,7 +51,7 @@ func TestAuthAuthorization(t *testing.T) {
 			// Create a new HTTP request
 			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 			req.AddCookie(&http.Cookie{
-				Name:     "token",
+				Name:     "ftk",
 				Value:    tt.token,
 				Domain:   "/",
 				HttpOnly: true,
@@ -78,7 +78,7 @@ func BenchmarkAuthAuthorization(b *testing.B) {
 	// Create a new gin context
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.Use(AuthAuthorization(secretKey))
+	r.Use(AuthGin(secretKey))
 	r.GET("/test", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "success"})
 	})
@@ -87,7 +87,7 @@ func BenchmarkAuthAuthorization(b *testing.B) {
 		// Create a new HTTP request
 		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 		req.AddCookie(&http.Cookie{
-			Name:     "token",
+			Name:     "ftk",
 			Value:    validToken,
 			Domain:   "/",
 			HttpOnly: true,
