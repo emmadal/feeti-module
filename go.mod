@@ -3,9 +3,10 @@ module github.com/emmadal/feeti-module
 go 1.24.2
 
 require (
+	github.com/gin-contrib/timeout v1.0.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/redis/go-redis/v9 v9.7.3
+	github.com/redis/go-redis/v9 v9.8.0
 	github.com/stretchr/testify v1.10.0
 )
 
