@@ -1,4 +1,4 @@
-package jwt_module
+package auth
 
 import (
 	"context"
