@@ -16,7 +16,7 @@ func SetSecureCookie(c *gin.Context, token string, domain string) {
 		Domain:   domain,
 		MaxAge:   int(30 * time.Minute), // Match token expiration time
 		HttpOnly: true,                  // Prevent JavaScript access
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	}
 
 	// Set Secure based on HTTPS usage
@@ -39,7 +39,13 @@ func ClearAuthCookie(c *gin.Context, domain string) {
 		Domain:   domain,
 		MaxAge:   -1,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
+	}
+	// Set Secure based on HTTPS usage
+	if c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" {
+		cookie.Secure = true
+	} else {
+		cookie.Secure = false
 	}
 	http.SetCookie(c.Writer, cookie)
 }
