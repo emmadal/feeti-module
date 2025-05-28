@@ -31,15 +31,8 @@ func AuthMiddleware(secretKey []byte) func(next http.Handler) http.Handler {
 				return
 			}
 
-			// Get the token value
-			token := strings.TrimSpace(tokenCookie.Value)
-			if token == "" {
-				http.Error(w, "Authentication required", http.StatusUnauthorized)
-				return
-			}
-
-			// Verify the token
-			userID, err := VerifyToken(token, secretKey)
+			// Verify the tokenCookie
+			userID, err := VerifyToken(tokenCookie.Value, secretKey)
 			if err != nil {
 				http.Error(w, "Authentication failed", http.StatusForbidden)
 				return
