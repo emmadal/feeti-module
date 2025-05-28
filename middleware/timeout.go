@@ -10,7 +10,10 @@ import (
 
 const defaultTimeout = 5 * time.Second
 
-// Timeout middleware
+// Timeout middleware is used to handle HTTP requests that take too long to
+// process.
+// It returns a 408 status indicating the request timed out.
+// By default, the timeout duration is set to 5 seconds.
 func Timeout(duration time.Duration) gin.HandlerFunc {
 	if duration <= 0 {
 		duration = defaultTimeout

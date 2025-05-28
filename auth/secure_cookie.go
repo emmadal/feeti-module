@@ -7,7 +7,7 @@ import (
 )
 
 // SetSecureCookie sets a JWT token in a cookie with secure settings
-func SetSecureCookie(c *gin.Context, token string, domain string, isProduction bool) {
+func SetSecureCookie(c *gin.Context, token string, domain string) {
 	// Create a new cookie with the token
 	cookie := &http.Cookie{
 		Name:     "ftk",
@@ -22,6 +22,8 @@ func SetSecureCookie(c *gin.Context, token string, domain string, isProduction b
 	// Set Secure based on HTTPS usage
 	if c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" {
 		cookie.Secure = true
+	} else {
+		cookie.Secure = false
 	}
 
 	// Set the cookie in the response
@@ -37,7 +39,7 @@ func ClearAuthCookie(c *gin.Context, domain string) {
 		Domain:   domain,
 		MaxAge:   -1,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode, // Changed from SameSiteStrictMode to SameSiteLaxMode to allow cross-origin requests
+		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(c.Writer, cookie)
 }
