@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"net/http"
 	"strings"
 
@@ -46,8 +47,8 @@ func AuthMiddleware(secretKey []byte) func(next http.Handler) http.Handler {
 }
 
 // GetUserID retrieves the user ID from the request context for standard HTTP
-func GetUserID(r *http.Request) (int64, bool) {
-	userID, ok := r.Context().Value(ContextUserID).(int64)
+func GetUserID(r *http.Request) (uuid.UUID, bool) {
+	userID, ok := r.Context().Value(ContextUserID).(uuid.UUID)
 	return userID, ok
 }
 
@@ -88,11 +89,11 @@ func AuthGin(secretKey []byte) gin.HandlerFunc {
 }
 
 // GetUserIDFromGin retrieves the user ID from the Gin context
-func GetUserIDFromGin(c *gin.Context) (int64, bool) {
+func GetUserIDFromGin(c *gin.Context) (uuid.UUID, bool) {
 	userID, exists := c.Get("userID")
 	if !exists {
-		return 0, false
+		return uuid.Nil, false
 	}
-	id, ok := userID.(int64)
+	id, ok := userID.(uuid.UUID)
 	return id, ok
 }

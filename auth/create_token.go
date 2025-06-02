@@ -2,20 +2,21 @@ package auth
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type CustomClaims struct {
-	UserID int64 `json:"userID"`
+	UserID uuid.UUID `json:"userID"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken generate a valid jwt token for 30 minutes
-func GenerateToken(userID int64, secretKey []byte) (string, error) {
+func GenerateToken(userID uuid.UUID, secretKey []byte) (string, error) {
 	// check if the secret key and userID are valid
-	if userID <= 0 || len(secretKey) == 0 {
+	if len(secretKey) == 0 || userID == uuid.Nil {
 		return "", fmt.Errorf("invalid user id")
 	}
 	// create a new token with the given userID

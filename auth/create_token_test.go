@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/google/uuid"
 	"testing"
 	"time"
 
@@ -9,7 +10,8 @@ import (
 )
 
 func TestGenerateToken(t *testing.T) {
-	token, err := GenerateToken(1, []byte("my_secret_key"))
+	userID := uuid.New()
+	token, err := GenerateToken(userID, []byte("my_secret_key"))
 	if err != nil {
 		t.Errorf("Error generating token: %v", err)
 	}
@@ -19,7 +21,7 @@ func TestGenerateToken(t *testing.T) {
 func BenchmarkGenerateToken(b *testing.B) {
 	// Setup code outside the measured part
 	secretKey := []byte("my_secret_key")
-	userID := int64(1)
+	userID := uuid.New()
 
 	// ReportAllocs will report memory allocations
 	b.ReportAllocs()
@@ -36,7 +38,7 @@ func BenchmarkGenerateToken(b *testing.B) {
 // BenchmarkGenerateTokenAlloc measures memory allocations
 func BenchmarkGenerateTokenAlloc(b *testing.B) {
 	secretKey := []byte("my_secret_key")
-	userID := int64(1)
+	userID := uuid.New()
 
 	// ReportAllocs will report memory allocations
 	b.ReportAllocs()
@@ -51,7 +53,7 @@ func BenchmarkGenerateTokenAlloc(b *testing.B) {
 
 // BenchmarkCreateClaims focuses specifically on the claims creation portion
 func BenchmarkCreateClaims(b *testing.B) {
-	userID := int64(1)
+	userID := uuid.New()
 
 	b.ReportAllocs()
 
@@ -69,7 +71,7 @@ func BenchmarkCreateClaims(b *testing.B) {
 
 // BenchmarkNewWithClaims focuses on the JWT creation step
 func BenchmarkNewWithClaims(b *testing.B) {
-	userID := int64(1)
+	userID := uuid.New()
 	var tokens []*jwt.Token
 
 	// Pre-create claims objects to isolate the token creation part
@@ -98,7 +100,7 @@ func BenchmarkNewWithClaims(b *testing.B) {
 // BenchmarkSignedString focuses on the JWT signing step, which showed highest allocations
 func BenchmarkSignedString(b *testing.B) {
 	secretKey := []byte("my_secret_key")
-	userID := int64(1)
+	userID := uuid.New()
 
 	// Pre-create a token to isolate the signing part
 	now := time.Now()

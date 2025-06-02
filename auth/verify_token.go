@@ -2,13 +2,14 @@ package auth
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 // UserClaims defines a struct for JWT claims to avoid using MapClaims
 type UserClaims struct {
-	UserID int64 `json:"userID"`
+	UserID uuid.UUID `json:"userID"`
 	jwt.RegisteredClaims
 }
 
@@ -16,7 +17,7 @@ type UserClaims struct {
 var jwtParser = jwt.NewParser(jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}))
 
 // VerifyToken verify the given token to get its payload.
-func VerifyToken(tokenString string, secretKey []byte) (int64, error) {
+func VerifyToken(tokenString string, secretKey []byte) (uuid.UUID, error) {
 	// Create a claims instance to unmarshal into
 	claims := &UserClaims{}
 
@@ -30,7 +31,7 @@ func VerifyToken(tokenString string, secretKey []byte) (int64, error) {
 	)
 
 	if err != nil || !token.Valid {
-		return 0, fmt.Errorf("invalid token")
+		return uuid.Nil, fmt.Errorf("invalid token")
 	}
 
 	// Access userID directly from the struct

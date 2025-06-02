@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/google/uuid"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,9 +12,10 @@ import (
 
 func TestAuthAuthorization(t *testing.T) {
 	secretKey := []byte("my_secret_key")
+	userID := uuid.New()
 
 	// Create a valid token for testing
-	validToken, err := GenerateToken(1, secretKey)
+	validToken, err := GenerateToken(userID, secretKey)
 	assert.NoError(t, err)
 
 	tests := []struct {
@@ -73,7 +75,8 @@ func TestAuthAuthorization(t *testing.T) {
 
 func BenchmarkAuthAuthorization(b *testing.B) {
 	secretKey := []byte("my_secret_key")
-	validToken, _ := GenerateToken(1, secretKey)
+	userID := uuid.New()
+	validToken, _ := GenerateToken(userID, secretKey)
 
 	// Create a new gin context
 	gin.SetMode(gin.TestMode)
