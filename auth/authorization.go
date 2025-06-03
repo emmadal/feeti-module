@@ -47,9 +47,12 @@ func AuthMiddleware(secretKey []byte) func(next http.Handler) http.Handler {
 }
 
 // GetUserID retrieves the user ID from the request context for standard HTTP
-func GetUserID(r *http.Request) (uuid.UUID, bool) {
+func GetUserID(r *http.Request) uuid.UUID {
 	userID, ok := r.Context().Value(ContextUserID).(uuid.UUID)
-	return userID, ok
+	if !ok {
+		return uuid.Nil
+	}
+	return userID
 }
 
 // AuthGin is a middleware that checks if the user is authenticated for a Gin framework
@@ -89,11 +92,10 @@ func AuthGin(secretKey []byte) gin.HandlerFunc {
 }
 
 // GetUserIDFromGin retrieves the user ID from the Gin context
-func GetUserIDFromGin(c *gin.Context) (uuid.UUID, bool) {
+func GetUserIDFromGin(c *gin.Context) uuid.UUID {
 	userID, exists := c.Get("userID")
 	if !exists {
-		return uuid.Nil, false
+		return uuid.Nil
 	}
-	id, ok := userID.(uuid.UUID)
-	return id, ok
+	return uuid.MustParse(userID.(string))
 }
