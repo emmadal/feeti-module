@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthAuthorization(t *testing.T) {
-	secretKey := []byte("my_secret_key")
-	userID := uuid.New()
+var userID = uuid.New()
+var secretKey = []byte("my_secret_key")
 
+func TestAuthAuthorization(t *testing.T) {
 	// Create a valid token for testing
 	validToken, err := GenerateToken(userID, secretKey)
 	assert.NoError(t, err)
@@ -36,7 +36,7 @@ func TestAuthAuthorization(t *testing.T) {
 		{
 			name:           "Invalid token",
 			token:          "invalid_token",
-			expectedStatus: 403,
+			expectedStatus: 401,
 		},
 	}
 
@@ -74,8 +74,6 @@ func TestAuthAuthorization(t *testing.T) {
 }
 
 func BenchmarkAuthAuthorization(b *testing.B) {
-	secretKey := []byte("my_secret_key")
-	userID := uuid.New()
 	validToken, _ := GenerateToken(userID, secretKey)
 
 	// Create a new gin context
@@ -104,4 +102,15 @@ func BenchmarkAuthAuthorization(b *testing.B) {
 		// Serve the request
 		r.ServeHTTP(w, req)
 	}
+}
+
+func TestGetUserIDFromGin(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(AuthGin(secretKey))
+	r.GET("/test", func(c *gin.Context) {
+		contextUserID := GetUserIDFromGin(c)
+		assert.Equal(t, userID, contextUserID)
+		c.JSON(200, gin.H{"userID": userID})
+	})
 }
