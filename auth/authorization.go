@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -18,8 +17,6 @@ func AuthGin(secretKey []byte) gin.HandlerFunc {
 
 		// Get the token from the cookie
 		tokenCookie, err := c.Request.Cookie("ftk")
-		fmt.Println("tokenCookie: ", tokenCookie)
-		fmt.Println("errCookies: ", err)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
 			return
@@ -50,5 +47,5 @@ func GetUserIDFromGin(c *gin.Context) uuid.UUID {
 	if !exists {
 		return uuid.Nil
 	}
-	return uuid.MustParse(userID.(string))
+	return userID.(uuid.UUID)
 }

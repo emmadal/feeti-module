@@ -8,7 +8,13 @@ import (
 
 // SetSecureCookie sets a JWT token in a cookie with secure settings
 func SetSecureCookie(c *gin.Context, token string, domain string) {
+	var sameSite http.SameSite
 	// Create a new cookie with the token
+	if domain == "localhost" {
+		sameSite = http.SameSiteLaxMode
+	} else {
+		sameSite = http.SameSiteNoneMode
+	}
 	cookie := &http.Cookie{
 		Name:     "ftk",
 		Value:    token,
@@ -16,7 +22,7 @@ func SetSecureCookie(c *gin.Context, token string, domain string) {
 		Domain:   domain,
 		MaxAge:   int(30 * time.Minute), // Match token expiration time
 		HttpOnly: true,                  // Prevent JavaScript access
-		SameSite: http.SameSiteNoneMode,
+		SameSite: sameSite,
 	}
 
 	// Set Secure based on HTTPS usage
@@ -32,6 +38,13 @@ func SetSecureCookie(c *gin.Context, token string, domain string) {
 
 // ClearAuthCookie clears the authentication cookie
 func ClearAuthCookie(c *gin.Context, domain string) {
+	var sameSite http.SameSite
+	// Create a new cookie with the token
+	if domain == "localhost" {
+		sameSite = http.SameSiteLaxMode
+	} else {
+		sameSite = http.SameSiteNoneMode
+	}
 	cookie := &http.Cookie{
 		Name:     "ftk",
 		Value:    "",
@@ -39,7 +52,7 @@ func ClearAuthCookie(c *gin.Context, domain string) {
 		Domain:   domain,
 		MaxAge:   -1,
 		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: sameSite,
 	}
 	// Set Secure based on HTTPS usage
 	if c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" {
