@@ -1,13 +1,11 @@
 package auth
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
 )
-
-// UserIDKey is the context key for the user ID
-type UserIDKey string
 
 // AuthGin is a middleware that checks if the user is authenticated for a Gin framework
 func AuthGin(secretKey []byte) gin.HandlerFunc {
@@ -20,6 +18,8 @@ func AuthGin(secretKey []byte) gin.HandlerFunc {
 
 		// Get the token from the cookie
 		tokenCookie, err := c.Request.Cookie("ftk")
+		fmt.Println("tokenCookie: ", tokenCookie)
+		fmt.Println("errCookies: ", err)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
 			return
