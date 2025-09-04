@@ -1,10 +1,11 @@
 package auth
 
 import (
-	"github.com/google/uuid"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

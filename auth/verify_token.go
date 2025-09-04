@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+
 	"github.com/google/uuid"
 
 	jwt "github.com/golang-jwt/jwt/v5"

@@ -9,8 +9,8 @@ import (
 )
 
 func setupTestRedis() {
-	os.Setenv("REDIS_HOST", "localhost")
-	os.Setenv("REDIS_PORT", "6379")
+	_ = os.Setenv("REDIS_HOST", "localhost")
+	_ = os.Setenv("REDIS_PORT", "6379")
 	_ = InitRedis()
 }
 

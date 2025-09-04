@@ -6,12 +6,14 @@ import (
 )
 
 func BenchmarkGetBackupTime(b *testing.B) {
-	// Save original env var to restore later
+	// Save the original env var to restore later
 	originalBackupTime := os.Getenv("BACKUP_TIME")
-	defer os.Setenv("BACKUP_TIME", originalBackupTime)
+	defer func() {
+		_ = os.Setenv("BACKUP_TIME", originalBackupTime)
+	}()
 
 	// Set environment variable for testing
-	os.Setenv("BACKUP_TIME", "12")
+	_ = os.Setenv("BACKUP_TIME", "12")
 
 	b.ReportAllocs()
 
@@ -27,17 +29,17 @@ func BenchmarkGetDBCredentials(b *testing.B) {
 	originalDBUser := os.Getenv("DB_USER")
 	originalDBHost := os.Getenv("DB_HOST")
 	defer func() {
-		os.Setenv("DB_PASSWORD", originalPassword)
-		os.Setenv("DB_NAME", originalDBName)
-		os.Setenv("DB_USER", originalDBUser)
-		os.Setenv("DB_HOST", originalDBHost)
+		_ = os.Setenv("DB_PASSWORD", originalPassword)
+		_ = os.Setenv("DB_NAME", originalDBName)
+		_ = os.Setenv("DB_USER", originalDBUser)
+		_ = os.Setenv("DB_HOST", originalDBHost)
 	}()
 
 	// Set environment variables for testing
-	os.Setenv("DB_PASSWORD", "test_password")
-	os.Setenv("DB_NAME", "test_db")
-	os.Setenv("DB_USER", "test_user")
-	os.Setenv("DB_HOST", "localhost")
+	_ = os.Setenv("DB_PASSWORD", "test_password")
+	_ = os.Setenv("DB_NAME", "test_db")
+	_ = os.Setenv("DB_USER", "test_user")
+	_ = os.Setenv("DB_HOST", "localhost")
 
 	b.ReportAllocs()
 
@@ -80,10 +82,10 @@ func setupTestEnv() map[string]string {
 		originalEnv[v] = os.Getenv(v)
 	}
 
-	os.Setenv("DB_PASSWORD", "test_password")
-	os.Setenv("DB_NAME", "test_db")
-	os.Setenv("DB_USER", "test_user")
-	os.Setenv("DB_HOST", "localhost")
+	_ = os.Setenv("DB_PASSWORD", "test_password")
+	_ = os.Setenv("DB_NAME", "test_db")
+	_ = os.Setenv("DB_USER", "test_user")
+	_ = os.Setenv("DB_HOST", "localhost")
 
 	return originalEnv
 }
@@ -91,6 +93,6 @@ func setupTestEnv() map[string]string {
 // Helper function to restore original environment
 func restoreEnv(originalEnv map[string]string) {
 	for k, v := range originalEnv {
-		os.Setenv(k, v)
+		_ = os.Setenv(k, v)
 	}
 }
